@@ -1,0 +1,482 @@
+/* ==========================================================
+   学校では教わらない？イギリス英語のスラング100 ― モックアップ
+   ========================================================== */
+
+:root {
+  --bg-index: #1a1412;
+  --ink: #2a2622;
+  --ink-muted: #6f6860;
+  --paper: #fbf8f2;
+
+  --font-ja-serif: "Noto Serif JP", "Hiragino Mincho ProN", serif;
+  --font-ja-sans: "Noto Sans JP", "Hiragino Sans", system-ui, sans-serif;
+  --font-label: "Oswald", "Noto Sans JP", sans-serif;
+
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--font-ja-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+img { display: block; max-width: 100%; height: auto; }
+
+a { color: inherit; text-decoration: none; }
+
+h1, h2, p, ul, figure { margin: 0; }
+
+ul { padding: 0; }
+
+:focus-visible { outline: 2px solid #f0c860; outline-offset: 4px; }
+
+/* ---------- ページ移動：背表紙がヘッダー画像に広がる ---------- */
+/* トップの背表紙と記事ページのヘッダー画像に、同じ view-transition-name と
+   view-transition-class: issue を HTML 側で付けている */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-group(*.issue) {
+  animation-duration: 0.75s;
+  animation-timing-function: var(--ease-out);
+}
+
+/* 背表紙（横長）と画像（約2:1）は形が違う。どちらも枠いっぱいに切り抜いて表示し、
+   引き伸ばされずに広がる・縮むように見せる */
+::view-transition-old(*.issue),
+::view-transition-new(*.issue) {
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 切り抜いた絵が枠の外にはみ出さないようにする */
+::view-transition-image-pair(*.issue) {
+  overflow: clip;
+}
+
+/* 元の絵（行きは背表紙、帰りはヘッダー画像）は早めに消し、
+   拡大された背表紙の文字がいつまでも残らないようにする */
+::view-transition-old(*.issue) {
+  animation-duration: 0.4s;
+}
+
+/* ページ全体（背景色の切り替わり）は少し短めに重ねて切り替える */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.5s;
+}
+
+/* ==========================================================
+   トップページ
+   ========================================================== */
+.page-index {
+  min-height: 100vh;
+  background: var(--bg-index);
+  color: #efe8dc;
+  overflow-x: clip;
+}
+
+.masthead {
+  padding: 72px 16px 48px;
+  text-align: center;
+}
+
+.masthead__label {
+  font-family: var(--font-label);
+  font-size: 0.75rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: #b6a993;
+}
+
+.masthead__title {
+  margin-top: 16px;
+  font-family: var(--font-ja-serif);
+  font-size: clamp(1.25rem, 0.9rem + 1.6vw, 2rem);
+  font-weight: 600;
+  line-height: 1.6;
+  letter-spacing: 0.06em;
+  /* 日本語を文節の切れ目で折り返す */
+  word-break: auto-phrase;
+  text-wrap: balance;
+}
+
+.masthead__count {
+  margin-top: 12px;
+  font-family: var(--font-ja-serif);
+  font-size: 0.8125rem;
+  letter-spacing: 0.2em;
+  color: #9d917d;
+}
+
+/* ---------- 背表紙の山 ---------- */
+/* 山全体を少し奥へ倒し、上から見下ろす角度にする。
+   背表紙の上面（::before）が見えて、本が積まれているような奥行きが出る */
+.stack {
+  padding: 24px 16px 120px;
+  overflow-x: clip;
+  perspective: 1600px;
+  perspective-origin: 50% -20%;
+}
+
+.stack__list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: min(720px, 100%);
+  margin-inline: auto;
+  list-style: none;
+  transform: rotateX(18deg);
+  transform-style: preserve-3d;
+}
+
+.stack__item {
+  width: var(--w, 100%);
+  transform: translateX(var(--x, 0));
+  transform-style: preserve-3d;
+  transition: transform 0.45s var(--ease-out);
+}
+
+/* 本ごとに幅・厚み・左右の位置を少しずつ変え、不ぞろいな山にする。
+   上の本からはみ出した部分だけ、下の本の上面（紙の小口）がのぞく */
+.stack__item:nth-child(4n + 1) { --w: 94%; --h: 62px; --x: -6px; }
+.stack__item:nth-child(4n + 2) { --w: 100%; --h: 54px; --x: 8px; }
+.stack__item:nth-child(4n + 3) { --w: 88%; --h: 66px; --x: -10px; }
+.stack__item:nth-child(4n + 4) { --w: 97%; --h: 58px; --x: 4px; }
+.stack__item:nth-child(5n) { --w: 91%; --x: 12px; }
+
+/* 本1冊。背表紙（.spine）と上面（::before）を、同じ3D空間の中に並べる。
+   背表紙には view-transition-name を付けるが、名前の付いた要素は中身が平面に
+   まとめられてしまうため、上面は背表紙の子ではなく、この .book の側に置く */
+.book {
+  position: relative;
+  display: block;
+  transform-style: preserve-3d;
+}
+
+.spine {
+  position: relative;
+  display: grid;
+  grid-template-columns: 4.5rem 1fr minmax(0, 15rem);
+  align-items: center;
+  gap: 16px;
+  height: var(--h, 58px);
+  padding-inline: 20px;
+  color: var(--spine-fg);
+  background: var(--spine-bg);
+  border-radius: 2px;
+  /* 背表紙の丸みと、下に落ちる影 */
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255 / 0.18),
+    inset 0 -3px 0 rgb(0 0 0 / 0.22),
+    0 14px 24px -12px rgb(0 0 0 / 0.7);
+}
+
+/* 本の上面。背表紙の上辺から奥へ倒した面で、紙の小口の縞を描く */
+.book::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: 120px;
+  background:
+    linear-gradient(to top, rgb(0 0 0 / 0.25), transparent 30%),
+    repeating-linear-gradient(to top, #efe9dc 0 2px, #d9d1c1 2px 3px);
+  border-inline: 6px solid var(--spine-bg);
+  transform-origin: bottom;
+  transform: rotateX(90deg);
+}
+
+.spine__no {
+  font-family: var(--font-label);
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  opacity: 0.8;
+}
+
+.spine__title {
+  overflow: hidden;
+  font-size: 1.375rem;
+  line-height: 1.1;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.spine__sub {
+  overflow: hidden;
+  font-family: var(--font-ja-serif);
+  font-size: 0.75rem;
+  text-align: right;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: 0.85;
+}
+
+/* 書体の種類（背表紙ごとに変えて、違う本が並んでいるように見せる） */
+.spine--serif-a .spine__title { font-family: "Playfair Display", serif; font-weight: 700; }
+.spine--serif-b .spine__title { font-family: "Libre Baskerville", serif; font-weight: 700; font-size: 1.125rem; }
+.spine--condensed .spine__title { font-family: "Bebas Neue", sans-serif; font-size: 1.875rem; letter-spacing: 0.06em; }
+.spine--display .spine__title { font-family: "DM Serif Display", serif; font-size: 1.5rem; }
+.spine--slab .spine__title { font-family: "Oswald", sans-serif; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; font-size: 1.25rem; }
+.spine--italic .spine__title { font-family: "Cormorant Garamond", serif; font-style: italic; font-weight: 600; font-size: 1.625rem; }
+
+/* ---------- カーソルを合わせると、その本が引き出される ---------- */
+@media (hover: hover) {
+  .stack__item:hover {
+    transform: translateX(calc(var(--x, 0px) + 56px)) translateZ(28px);
+  }
+
+  /* すぐ上の本とすぐ下の本も、引っ張られるように少しずれる */
+  .stack__item:hover + .stack__item,
+  .stack__item:has(+ .stack__item:hover) {
+    transform: translateX(calc(var(--x, 0px) + 16px));
+  }
+}
+
+/* キーボードで選んだときも同じように引き出す */
+.stack__item:has(.book:focus-visible) {
+  transform: translateX(calc(var(--x, 0px) + 56px)) translateZ(28px);
+}
+
+.footer {
+  padding: 32px 16px;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-align: center;
+  color: #8a7f6e;
+}
+
+/* スマホ：副題を省き、傾きを浅くする */
+@media (max-width: 640px) {
+  .masthead { padding-top: 56px; }
+  .stack__list { transform: rotateX(12deg); }
+  .spine { grid-template-columns: 3.25rem 1fr; gap: 10px; padding-inline: 14px; }
+  .spine__sub { display: none; }
+  .stack__item:nth-child(n) { --h: 50px; --x: 0px; }
+  .spine__title { font-size: 1.125rem; }
+  .spine--condensed .spine__title { font-size: 1.5rem; }
+  .spine--italic .spine__title { font-size: 1.375rem; }
+}
+
+/* ==========================================================
+   記事ページ
+   ========================================================== */
+.page-article {
+  /* 背表紙の色を薄く混ぜた紙の色にする（一覧の暗い背景から切り替わる） */
+  background: color-mix(in srgb, var(--spine-bg) 12%, var(--paper));
+  color: var(--ink);
+}
+
+.back {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+  padding: 8px 16px;
+  font-size: 0.8125rem;
+  color: var(--spine-fg);
+  background: var(--spine-bg);
+  border-radius: 999px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.2);
+}
+
+.article__hero {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  aspect-ratio: 40 / 21;
+  object-fit: cover;
+}
+
+.article__header {
+  max-width: 40rem;
+  margin: 48px auto 0;
+  padding-inline: 16px;
+}
+
+.article__no {
+  display: inline-block;
+  padding: 2px 12px;
+  font-family: var(--font-ja-serif);
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+  color: var(--spine-fg);
+  background: var(--spine-bg);
+}
+
+.article__title {
+  margin-top: 16px;
+  font-weight: 400;
+}
+
+.article__slang {
+  display: block;
+  font-family: "Playfair Display", serif;
+  font-size: clamp(2rem, 1.4rem + 3vw, 3.25rem);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.article__subtitle {
+  display: block;
+  margin-top: 12px;
+  font-family: var(--font-ja-serif);
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  color: var(--ink-muted);
+}
+
+/* 本文：1段組み、1行40字前後、行間2倍。読む間は装飾や動きを入れない */
+.article__body {
+  max-width: 40rem;
+  margin: 40px auto 0;
+  padding: 0 16px 64px;
+  font-family: var(--font-ja-serif);
+  font-size: 1.0625rem;
+  line-height: 2;
+}
+
+.article__body > * + * { margin-top: 1.4em; }
+
+.article__heading {
+  margin-top: 2.6em !important;
+  padding-left: 14px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.6;
+  border-left: 4px solid var(--spine-bg);
+}
+
+/* 例文：英文を大きく、訳を下に小さく */
+.article__example {
+  padding: 4px 0 4px 18px;
+  border-left: 2px solid color-mix(in srgb, var(--spine-bg) 60%, transparent);
+}
+
+.article__en {
+  display: block;
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 1.25rem;
+  line-height: 1.6;
+}
+
+.article__trans {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--ink-muted);
+}
+
+.article__list {
+  padding-left: 1.4em;
+}
+
+.article__list li + li { margin-top: 0.4em; }
+
+.article__list .is-en {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 1.125rem;
+}
+
+.article__list .is-en .article__trans {
+  font-family: var(--font-ja-serif);
+  font-style: normal;
+  font-weight: 400;
+}
+
+.article__source {
+  margin-top: 0.4em !important;
+  font-family: var(--font-ja-sans);
+  font-size: 0.8125rem;
+  color: var(--ink-muted);
+  text-align: right;
+}
+
+.article__figure img {
+  width: 100%;
+  border-radius: 2px;
+}
+
+.article__figure figcaption {
+  margin-top: 8px;
+  font-family: var(--font-ja-sans);
+  font-size: 0.8125rem;
+  color: var(--ink-muted);
+}
+
+.refs {
+  margin-top: 3em !important;
+  padding-top: 24px;
+  border-top: 1px solid color-mix(in srgb, var(--ink) 20%, transparent);
+  font-family: var(--font-ja-sans);
+  font-size: 0.8125rem;
+  line-height: 1.8;
+  color: var(--ink-muted);
+}
+
+.refs__title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+}
+
+.refs__list {
+  margin-top: 8px;
+  padding-left: 1.2em;
+}
+
+.pager {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+  font-size: 0.875rem;
+  border-top: 1px solid color-mix(in srgb, var(--ink) 20%, transparent);
+}
+
+.pager__link {
+  padding: 6px 14px;
+  border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent);
+  border-radius: 999px;
+}
+
+@media (hover: hover) {
+  .pager__link:hover {
+    color: var(--spine-fg);
+    background: var(--spine-bg);
+    border-color: var(--spine-bg);
+  }
+}
+
+/* ---------- 動きを減らす設定の人向け ---------- */
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
+
+  .stack__item { transition: none; }
+}
+
+/* note から取り込んだ記事の、外部へのリンク（YouTubeの動画や商品など） */
+.article__embed a {
+  display: block;
+  padding: 12px 16px;
+  font-family: var(--font-ja-sans);
+  font-size: 0.875rem;
+  border: 1px solid color-mix(in srgb, var(--ink) 20%, transparent);
+  border-radius: 4px;
+}
+
+.article__body a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

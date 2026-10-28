@@ -1,0 +1,76 @@
+# noteの新しい回を取り込み、サイトを書き出して GitHub Pages に公開する。
+#  ・毎朝 6時17分（日本時間）に自動で動く
+#  ・Actions 画面の「Run workflow」ボタンで、いつでも手動で動かせる
+#  ・自分で main に push したときも、サイトを書き出し直して公開する（取り込みはしない）
+name: Update site
+
+on:
+  schedule:
+    - cron: "17 21 * * *" # UTC 21:17 = 日本時間 6:17
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: update-site
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # 取り込みに失敗しても、既存の記事の公開は続けるため、ここでは止めない
+      - name: Import new issues from note
+        id: import
+        if: github.event_name != 'push'
+        continue-on-error: true
+        run: python scripts/import_note.py
+
+      - name: Build site
+        run: python scripts/build.py
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data site
+          if git diff --cached --quiet; then
+            echo "変更なし"
+          else
+            git commit -m "新しい回を取り込み、サイトを更新"
+            git push
+          fi
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      # 公開まで終えたあとで、取り込みの失敗を「失敗」として知らせる（GitHubからメールが届く）
+      - name: Report import failure
+        if: steps.import.outcome == 'failure'
+        run: |
+          echo "noteからの取り込みに失敗した回があります。上の Import new issues from note のログを確認してください。"
+          exit 1
