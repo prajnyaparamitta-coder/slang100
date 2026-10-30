@@ -166,7 +166,10 @@ def strip_bullet(line):
 
 
 def render_paragraph(p):
-    lines = split_lines(p)
+    return render_lines(split_lines(p))
+
+
+def render_lines(lines):
     texts = [plain(l) for l in lines]
     # 前後の空行を落とす
     while texts and not texts[0]:
@@ -244,6 +247,13 @@ def convert_body(body, number):
             if refs is None and nonempty and nonempty[0][1] == "参考":
                 refs = [strip_bullet(l) for l, _ in nonempty[1:]]
                 continue
+            # 本文と同じ段落の途中に「参考」がある場合は、そこで分ける
+            if refs is None and el.name == "p":
+                k = next((i for i, (_, t) in enumerate(pairs) if t == "参考"), None)
+                if k is not None:
+                    out.extend(render_lines([l for l, _ in pairs[:k]]))
+                    refs = [strip_bullet(l) for l, t in pairs[k + 1:] if t]
+                    continue
             if refs is not None:
                 refs.extend(strip_bullet(l) for l, _ in nonempty)
                 continue
