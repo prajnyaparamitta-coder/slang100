@@ -1,13 +1,13 @@
 # noteの新しい回を取り込み、サイトを書き出して GitHub Pages に公開する。
-#  ・毎朝 6時17分（日本時間）に自動で動く
+#  ・毎日 10時と16時17分（日本時間）に自動で動く
 #  ・Actions 画面の「Run workflow」ボタンで、いつでも手動で動かせる
 #  ・自分で main に push したときも、サイトを書き出し直して公開する（取り込みはしない）
 name: Update site
 
 on:
   schedule:
-    - cron: "17 21 * * *" # UTC 21:17 = 日本時間 6:17
     - cron: "0 1 * * *"   # UTC 1:00 = 日本時間 10:00
+    - cron: "17 7 * * *"  # UTC 7:17 = 日本時間 16:17
   workflow_dispatch:
   push:
     branches: [main]
